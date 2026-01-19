@@ -1,11 +1,9 @@
 name: Auto Update Festivals
 
 on:
-  # 임시 테스트용 스케줄
-  # - GitHub Actions cron은 "최소 5분 단위"라 2분마다 실행은 불가합니다.
-  # - 확인용으로 5분마다 실행되도록 설정합니다. (추후 주 1회로 되돌리세요)
+  # 매주 1회 실행 (월요일 00:00 KST = 일요일 15:00 UTC)
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 15 * * 0'
   # 수동 실행도 가능
   workflow_dispatch:
 
@@ -29,13 +27,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Debug tick (counter)
-        run: |
-          echo "✅ tick"
-          echo "run_number=${GITHUB_RUN_NUMBER}"
-          echo "run_id=${GITHUB_RUN_ID}"
-          echo "utc_now=$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -46,10 +37,6 @@ jobs:
         run: |
           npm ci --prefix tools/mcst-scraper --no-audit --no-fund
           node scripts/updateFestivals.js
-        env:
-          # 테스트 중: 매 실행마다 축제 데이터 파일에 generatedAt 주석을 넣어 변경을 강제로 발생시킵니다.
-          # 운영 전환 시 이 값을 제거/0으로 바꾸면 "변경 없으면 커밋 없음"으로 돌아갑니다.
-          FESTIVALS_FORCE_UPDATE: '1'
 
       - name: Check for changes
         id: verify-changed-files
@@ -79,19 +66,6 @@ jobs:
           git add src/data/festivals.js
           git commit -m "chore: 자동 업데이트 - 축제 데이터 갱신"
           git push
-
-      - name: Trigger Cloudflare Pages Deploy Hook (optional)
-        if: steps.verify-changed-files.outputs.changed == 'true'
-        env:
-          CF_PAGES_DEPLOY_HOOK_URL: ${{ secrets.CF_PAGES_DEPLOY_HOOK_URL }}
-        run: |
-          if [ -n "$CF_PAGES_DEPLOY_HOOK_URL" ]; then
-            echo "🚀 Triggering Cloudflare Pages deploy hook..."
-            curl -fsSL -X POST "$CF_PAGES_DEPLOY_HOOK_URL"
-            echo "✅ Deploy hook triggered."
-          else
-            echo "ℹ️  CF_PAGES_DEPLOY_HOOK_URL not set. Skipping deploy hook."
-          fi
 
       - name: Summary - Updated
         if: steps.verify-changed-files.outputs.changed == 'true'
