@@ -46,6 +46,10 @@ jobs:
         run: |
           npm ci --prefix tools/mcst-scraper --no-audit --no-fund
           node scripts/updateFestivals.js
+        env:
+          # 테스트 중: 매 실행마다 축제 데이터 파일에 generatedAt 주석을 넣어 변경을 강제로 발생시킵니다.
+          # 운영 전환 시 이 값을 제거/0으로 바꾸면 "변경 없으면 커밋 없음"으로 돌아갑니다.
+          FESTIVALS_FORCE_UPDATE: '1'
 
       - name: Check for changes
         id: verify-changed-files
@@ -73,8 +77,21 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add src/data/festivals.js
-          git commit -m "chore: 자동 업데이트 - 축제 데이터 갱신 [skip ci]"
+          git commit -m "chore: 자동 업데이트 - 축제 데이터 갱신"
           git push
+
+      - name: Trigger Cloudflare Pages Deploy Hook (optional)
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        env:
+          CF_PAGES_DEPLOY_HOOK_URL: ${{ secrets.CF_PAGES_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$CF_PAGES_DEPLOY_HOOK_URL" ]; then
+            echo "🚀 Triggering Cloudflare Pages deploy hook..."
+            curl -fsSL -X POST "$CF_PAGES_DEPLOY_HOOK_URL"
+            echo "✅ Deploy hook triggered."
+          else
+            echo "ℹ️  CF_PAGES_DEPLOY_HOOK_URL not set. Skipping deploy hook."
+          fi
 
       - name: Summary - Updated
         if: steps.verify-changed-files.outputs.changed == 'true'

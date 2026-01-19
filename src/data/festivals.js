@@ -1,6 +1,7 @@
 // 문화체육관광부 지역축제(목록보기) 기반 데이터
 // - 참고 페이지: https://www.mcst.go.kr/site/s_culture/festival/festivalList.jsp?pMenuCD=&pCurrentPage=1&pSearchType=&pSearchWord=&pSeq=&pSido=&pOrder=&pPeriod=&fromDt=&toDt=
 // - 이 파일은 tools/mcst-scraper/updateFestivals.js 에 의해 자동 생성됩니다.
+// - (test) generatedAt: 2026-01-19T10:45:51.606Z
 
 export const festivals = [
   {

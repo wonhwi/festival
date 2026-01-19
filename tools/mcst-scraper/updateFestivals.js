@@ -202,6 +202,8 @@ async function fetchFestivalDetail(detailUrl) {
 }
 
 function formatFestivalsFile(festivals) {
+  const forceUpdate = process.env.FESTIVALS_FORCE_UPDATE === '1';
+  const generatedAt = new Date().toISOString();
   const festivalsArray = festivals
     .map((festival, idx) => ({ ...festival, id: idx + 1 }))
     .map((festival) => {
@@ -225,6 +227,7 @@ function formatFestivalsFile(festivals) {
   return `// 문화체육관광부 지역축제(목록보기) 기반 데이터
 // - 참고 페이지: ${MCST_LIST_URL(1)}
 // - 이 파일은 tools/mcst-scraper/updateFestivals.js 에 의해 자동 생성됩니다.
+${forceUpdate ? `// - (test) generatedAt: ${generatedAt}` : ''}
 
 export const festivals = [
 ${festivalsArray}
