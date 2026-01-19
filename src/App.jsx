@@ -4,6 +4,7 @@ import { isActiveOrUpcoming, isOngoing, getDaysUntil } from './utils/dateUtils';
 import FestivalCard from './components/FestivalCard';
 import RegionFilter from './components/RegionFilter';
 import Pagination from './components/Pagination';
+import SchedulerStatus from './components/SchedulerStatus';
 import './App.css';
 
 function App() {
@@ -65,6 +66,7 @@ function App() {
         <h1 className="app-title">대한민국 축제 일정</h1>
         <p className="app-subtitle">곧 다가오는 축제들을 확인해보세요</p>
       </header>
+      <SchedulerStatus />
 
       <main className="app-main">
         <div className="container">
